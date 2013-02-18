@@ -30,7 +30,9 @@ TODO List
 
 For internal use:
   * Read from config files, and switch handlers based on them.
+  * Add handler methods for connection failure and re-init in ConsumerMixin
   * Figure out what GraderRequest and GraderResult should have in them
+  * Heartbeats
   * Finish the other leg of this and push the response back to another queue
   * Create something that reads from that other queue and updates LMS db
   * Actually implement the commandline interface
@@ -75,11 +77,16 @@ log.addHandler(handler)
 
 
 def main():
+
     args = docopt(__doc__.partition("=========")[0], version="EdX Agent 0.1")
 
-    # Do startup debug log stuff here. -- connection, user, log file locations
+    # TODO: startup debug log stuff here. -- connection, user, log file locations
     # selected grader
+
     with Connection('amqp://guest:guest@localhost:5672//') as connection:
+        # amqplib isn't threadsafe, so sharing a Connection object like this
+        # seems dangerous. However, the ConsumerMixins never use this connection
+        # -- they just use it as a template to clone their own Connection objs.
         grade_request_consumers = [GradeRequestConsumer(connection,
                                                         HTTPGrader("http://localhost/"))
                                    for _ in range(10)]
