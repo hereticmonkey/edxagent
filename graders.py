@@ -32,6 +32,17 @@ class Grader(object):
     4. Don't worry about multi-threading. In fact, we *should* block, or else
        edxagent will just pummel our server with as many requests as we can
        handle, and we want to explicitly shield from that.
+
+    Your Grader should *NOT*:
+
+    1. Do async operations (or rate limiting will be thrown off)
+    2. Do anything computationally expensive.
+    3. Do anything application specific.
+    4. Do anything particularly complicated.
+
+    Grader objects exist only to pass on requests to the smart things that
+    actually understand how to do the real work of evaluating the problem and
+    the student's solution. We want to keep it as small and simple as possible.
     """
     __metaclass__ = abc.ABCMeta
 

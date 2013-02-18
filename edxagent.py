@@ -3,8 +3,10 @@ EdX Agent
 
 The EdX Agent allows you to integrate a custom grader with the edX site. Most
 parameters can be set in the config file, but can also be overridden via command
-line options. See http://edx.github.com/edxagent for more info. This is my first
-stab at a commandline interface, but I haven't actually implemented any of it.
+line options. See http://edx.github.com/edxagent for more info.
+
+*** This is my first stab at a commandline interface, but I haven't actually
+implemented any of it.***
 
 Usage:
   edxagent.py [--config=FILE]
@@ -24,6 +26,33 @@ Options:
 
   -h --help     Show this screen.
   --version     Show version.
+
+================================================================================
+The basic idea is that you install this program on a machine that has a grader
+(like 6.00x's xserver). Each edX Agent will be responsible for one grader type,
+and will listen to as many queues as necessary. If you have multiple kinds of
+things you want graded, you'd simply run two instances of this agent with
+different config.
+
+An agent has a fixed number of threads that will be configurable, so you always
+have a fixed number of maximum concurrent requests. I used threads because it
+was simple, and we're I/O bound, so CPU concurrency wasn't really an issue. I
+did various tests using the SleepGrader and HTTPGrader and it gave the kind of
+parallelism you'd expect.
+
+The flow is simple. EdX Agent listens on a set of queues with worker threads.
+When it gets a GraderRequest from the LMS, in instantiates a Grader that has
+been specified in configuration. This Grader knows how to invoke whatever
+underlying mechanism is necessary to evaluate the request (HTTP call to a local
+server, subprocess call to a binary, etc.). The Grader gets the reply, makes a
+GraderResponse out of it, and passes it back. The agent then takes that response
+and sends it to a queue that some LMS worker will read from to update students'
+scores.
+
+To play with this.
+  1. Run a local web server
+  2. Start this agent: python edxagent.py
+  3. Run the simple request maker: python mockrequester.py
 
 ================================================================================
 TODO List
