@@ -31,6 +31,8 @@ TODO List
 For internal use:
   * Read from config files, and switch handlers based on them.
   * Figure out what GraderRequest and GraderResult should have in them
+  * Finish the other leg of this and push the response back to another queue
+  * Create something that reads from that other queue and updates LMS db
   * Actually implement the commandline interface
   * Move logger setup
   * Create the on_decode_error for our GradeRequestConsumer
@@ -116,7 +118,7 @@ class GradeRequestConsumer(ConsumerMixin):
         """This is mostly boilerplate from Kombu's docs, as this is used by
         Kombu's ConsumerMixin that we inherit from.
         """
-        # Note that we have multiple callbacks called in sequence.
+        # Note that we can have multiple callbacks called in sequence.
         consumers = [Consumer(self.queues, callbacks=[self.on_message])]
 
         # Force RabbitMQ to only send us a new message after we've ack'd the
@@ -134,6 +136,8 @@ class GradeRequestConsumer(ConsumerMixin):
         response = self.grader.grade(GraderRequest(data=body))
         time_elapsed = datetime.now() - started_at
         log.info(u"graded in %s: %s, %s", time_elapsed, body, response.data)
+
+        # TODO: At this point, we'd have a producer and spit the reply back.
 
         # We're done, ack message to remove it from the queue. RabbitMQ knows
         # what consumer got this message, and knows whether we're still alive,
