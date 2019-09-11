@@ -1,4 +1,4 @@
-This is not maintained -- It was a personal experiment, so please do not use in production!
+This is not maintained -- It was a personal experiment and absolutely won't work with Open edX today!
 =========
 The basic idea is that you install this program on a machine that has a grader
 (like 6.00x's xserver). Each edX Agent will be responsible for one grader type,
